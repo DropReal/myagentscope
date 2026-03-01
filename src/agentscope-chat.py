@@ -2,6 +2,7 @@ from agentscope.model import OpenAIChatModel
 from agentscope.model import DashScopeChatModel
 import os
 import asyncio
+from dotenv import load_dotenv
 from agentscope.message import Msg
 from agentscope.model import ChatResponse
 
@@ -27,9 +28,10 @@ from agentscope.model import ChatResponse
 #     },
 #     stream=True,
 # )
+load_dotenv()  # 加载 .env 文件中的环境变量
+
 
 # 阿里云 DashScope（通义千问）
-
 
 qwen_model = DashScopeChatModel(
     model_name="qwen3-max",  # 通义千问模型
@@ -89,9 +91,23 @@ async def example_model_stream_usage():
     async for chunk in stream_response:
         print(chunk.content[0]["text"])
 
+async def example_siliconflow_usage():
+    model = OpenAIChatModel(
+        model_name=os.environ["siliconflow_model"],
+        api_key=os.environ["siliconflow_api_key"],  # 本地模型通常不需要密钥
+        client_kwargs={
+            "base_url": os.environ["siliconflow_base_http_api_url"],  # vLLM 端点
+        },
+        stream=True,
+    )
+    messages = [{"role": "system", "content": "你是有帮助的助手"},
+            {"role": "user", "content": "你是谁"}]
+    response = await model(messages)
+    async for chunk in response:
+        print(chunk.content[0])
 # 使用示例example_qwen
 if __name__ == "__main__":
-    asyncio.run(example_model_stream_usage())
+    asyncio.run(example_siliconflow_usage())
 
 
 
